@@ -13,12 +13,15 @@ using std::find;
 Trie trie;
 char* text = nullptr;
 int size_text = 0;
+
+const enum class Types { Keyword, Identificator, Literal, Operation, Punctuation, ELSE};
+
 const std::vector <char> simple_oper = {'+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^', '[', ']', '.'};
 const std::vector <std::string> compound_oper = { "++", "--", "==", ">=", "<=", "!=", "||", "&&", "^=", "&=", "|=", "*="};
 const std::vector <std::string> types = { "Keyword", "Identificator", "Literal", "Operation", "Punctuation", "ELSE"};
 
 void Lexer() {
-    int type = 0;
+    Types type = Types::Keyword;
     for (char* current = text; current != text + size_text;) {
         std::string res = "";
         if (*current == ' ' or *current == '\n' or *current == '\r' or *current == '\t') {
@@ -27,7 +30,7 @@ void Lexer() {
         } else if (*current == '/') {
             ++current;
             if (current != text + size_text and *current == '=') {
-                type = 4;
+                type = Types::Operation;
                 res += *(current++);
             } else if (current != text + size_text and *current == '*') {
                 ++current;
@@ -43,7 +46,7 @@ void Lexer() {
                 while (current != text + size_text and *(current++) != '\n') {}
                 continue;
             } else {
-                type = 4;
+                type = Types::Operation;
                 res += '/';
             }
         } else if (isalpha(*current) or *current == '_') {
@@ -52,8 +55,8 @@ void Lexer() {
                 res += (*(current++));
             }
             if (trie.isExisted(res)) {
-                type = 1;
-            } else type = 2;
+                type = Types::Keyword;
+            } else type = Types::Identificator;
         } else if (isdigit(*current)) {
             while (current != text + size_text and isdigit(*current)) {
                 res += (*(current++));
@@ -66,11 +69,11 @@ void Lexer() {
                 }
             }
             if (res[res.size() - 1] == '.') {
-                type = 6;
-            } else type = 3;
+                type = Types::ELSE;
+            } else type = Types::Literal;
         } else if (*current == ',' or *current == ';' or *current == '(' or *current == ')' or *current == '{' or *current == '}') {
             res += *current;
-            type = 5;
+            Types::Punctuation;
             ++current;
         } else if (*current == '"') {
             res += *(current++);
@@ -79,13 +82,13 @@ void Lexer() {
             }
             if (current != text + size_text) {
                 res += *(current++);
-                type = 3;
+                type = Types::Literal;
             } else {
-                type = 6;
+                type = Types::ELSE;
             }
         } else if (find(simple_oper.begin(), simple_oper.end(), *current) != simple_oper.end()) {
             res += *current;
-            type = 4;
+            type = Types::Operation;
             ++current;
             if (current != text + size_text) {
                 if (find(compound_oper.begin(), compound_oper.end(), res + *current) != compound_oper.end()) {
@@ -93,7 +96,14 @@ void Lexer() {
                 }
             }
         }
-        cout << res << " " << types[type - 1] << '\n';
+        cout << res << " ";
+        if (type == Types::Keyword) cout << "Keyword";
+        else if (type == Types::Identificator) cout << "Identificator";
+        else if (type == Types::Literal) cout << "Literal";
+        else if (type == Types::Operation) cout << "Operation";
+        else if (type == Types::Punctuation) cout << "Punctuation";
+        else cout << "ELSE";
+        cout << '\n';
     }
 }
 
