@@ -13,7 +13,7 @@ using std::find;
 Trie trie;
 char* text = nullptr;
 int size_text = 0;
-std::vector <char> simple_oper = {'+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^'};
+std::vector <char> simple_oper = {'+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^', '[', ']'};
 std::vector <std::string> compound_oper = { "++", "--", "==", ">=", "<=", "!=", "||", "&&", "^=", "&=", "|="};
 std::vector <std::string> types = { "Keyword", "Identificator", "Literal", "Operation", "Punctuation", "ELSE"};
 
