@@ -18,7 +18,6 @@ const enum class Types { Keyword, Identificator, Literal, Operation, Punctuation
 
 const std::vector <char> simple_oper = {'+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^', '[', ']', '.'};
 const std::vector <std::string> compound_oper = { "++", "--", "==", ">=", "<=", "!=", "||", "&&", "^=", "&=", "|=", "*="};
-const std::vector <std::string> types = { "Keyword", "Identificator", "Literal", "Operation", "Punctuation", "ELSE"};
 
 void Lexer() {
     Types type = Types::Keyword;
