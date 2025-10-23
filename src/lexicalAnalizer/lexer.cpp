@@ -13,17 +13,39 @@ using std::find;
 Trie trie;
 char* text = nullptr;
 int size_text = 0;
-std::vector <char> simple_oper = {'+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^', '[', ']'};
-std::vector <std::string> compound_oper = { "++", "--", "==", ">=", "<=", "!=", "||", "&&", "^=", "&=", "|="};
-std::vector <std::string> types = { "Keyword", "Identificator", "Literal", "Operation", "Punctuation", "ELSE"};
+const std::vector <char> simple_oper = {'+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^', '[', ']', '.'};
+const std::vector <std::string> compound_oper = { "++", "--", "==", ">=", "<=", "!=", "||", "&&", "^=", "&=", "|=", "*="};
+const std::vector <std::string> types = { "Keyword", "Identificator", "Literal", "Operation", "Punctuation", "ELSE"};
 
 void Lexer() {
-    std::string res = "";
     int type = 0;
     for (char* current = text; current != text + size_text;) {
+        std::string res = "";
         if (*current == ' ' or *current == '\n' or *current == '\r' or *current == '\t') {
             ++current;
             continue;
+        } else if (*current == '/') {
+            ++current;
+            if (current != text + size_text and *current == '=') {
+                type = 4;
+                res += *(current++);
+            } else if (current != text + size_text and *current == '*') {
+                ++current;
+                while (current != text + size_text) {
+                    if (*(current++) == '*' and *current == '/') {
+                        ++current;
+                        break;
+                    }
+                }
+                continue;
+            } else if (current != text + size_text and *current == '/') {
+                ++current;
+                while (current != text + size_text and *(current++) != '\n') {}
+                continue;
+            } else {
+                type = 4;
+                res += '/';
+            }
         } else if (isalpha(*current) or *current == '_') {
             res += (*(current++));
             while (current != text + size_text and (isalnum(*current) or *current == '_')) {
@@ -33,8 +55,15 @@ void Lexer() {
                 type = 1;
             } else type = 2;
         } else if (isdigit(*current)) {
-            while (current != text + size_text and (isdigit(*current) or *current == '.')) {
+            while (current != text + size_text and isdigit(*current)) {
                 res += (*(current++));
+            }
+            if (current != text + size_text and *current == '.') {
+                ++current;
+                res += '.';
+                while (current != text + size_text and isdigit(*current)) {
+                    res += (*(current++));
+                }
             }
             if (res[res.size() - 1] == '.') {
                 type = 6;
@@ -65,7 +94,6 @@ void Lexer() {
             }
         }
         cout << res << " " << types[type - 1] << '\n';
-        res = "";
     }
 }
 
