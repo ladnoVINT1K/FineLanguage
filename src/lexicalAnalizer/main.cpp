@@ -17,14 +17,7 @@ int main() {
         const char* pos = text;
         pair<Types, string> res = get_lexem(pos, text + size_text, trie);
         while (res.first != Types::END) {
-            cout << res.second << " ";
-            if (res.first == Types::Keyword) cout << "Keyword";
-            else if (res.first == Types::Identificator) cout << "Identificator";
-            else if (res.first == Types::Literal) cout << "Literal";
-            else if (res.first == Types::Operation) cout << "Operation";
-            else if (res.first == Types::Punctuation) cout << "Punctuation";
-            else cout << "ELSE";
-            cout << '\n';
+            cout << res.second << " " << type_to_string(res.first) << '\n';
             res = get_lexem(pos, text + size_text, trie);
         }
     }

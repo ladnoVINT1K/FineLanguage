@@ -124,3 +124,12 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
     }
     return { Types::END, "" };
 }
+
+string type_to_string(Types type) {
+    if (type == Types::Keyword) return "Keyword";
+    else if (type == Types::Identificator) return "Identificator";
+    else if (type == Types::Literal) return "Literal";
+    else if (type == Types::Operation) return "Operation";
+    else if (type == Types::Punctuation) return "Punctuation";
+    else return "ELSE";
+}
