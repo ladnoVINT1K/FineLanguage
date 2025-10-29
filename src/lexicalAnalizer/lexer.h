@@ -18,14 +18,12 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
         if (*current == ' ' or *current == '\n' or *current == '\r' or *current == '\t') {
             ++current;
             continue;
-        }
-        else if (*current == '/') {
+        } else if (*current == '/') {
             ++current;
             if (current < end and *current == '=') {
                 type = Types::Operation;
                 res += *(current++);
-            }
-            else if (current < end and *current == '*') {
+            } else if (current < end and *current == '*') {
                 ++current;
                 while (current < end) {
                     if (*(current++) == '*' and *current == '/') {
@@ -34,28 +32,23 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
                     }
                 }
                 continue;
-            }
-            else if (current < end and *current == '/') {
+            } else if (current < end and *current == '/') {
                 ++current;
                 while (current < end and *(current++) != '\n') {}
                 continue;
-            }
-            else {
+            } else {
                 type = Types::Operation;
                 res += '/';
             }
-        }
-        else if (isalpha(*current) or *current == '_') {
+        } else if (isalpha(*current) or *current == '_') {
             res += (*(current++));
             while (current < end and (isalnum(*current) or *current == '_')) {
                 res += (*(current++));
             }
             if (trie.isExisted(res)) {
                 type = Types::Keyword;
-            }
-            else type = Types::Identificator;
-        }
-        else if (isdigit(*current)) {
+            } else type = Types::Identificator;
+        } else if (isdigit(*current)) {
             while (current < end and isdigit(*current)) {
                 res += (*(current++));
             }
@@ -68,19 +61,15 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
             }
             if (res[res.size() - 1] == '.') {
                 type = Types::ELSE;
-            }
-            else type = Types::Literal;
-        }
-        else if (*current == ',' or *current == ';' or *current == '(' or *current == ')' or *current == '{' or *current == '}') {
+            } else type = Types::Literal;
+        } else if (*current == ',' or *current == ';' or *current == '(' or *current == ')' or *current == '{' or *current == '}') {
             res += *current;
             type = Types::Punctuation;
             ++current;
-        }
-        else if (*current == '\0') {
+        } else if (*current == '\0') {
             type = Types::Literal;
             res += *(current++);
-        }
-        else if (*current == '"') {
+        } else if (*current == '"') {
             res += *(current++);
             while (current < end and *current != '"') {
                 res += *(current++);
@@ -88,12 +77,10 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
             if (current < end) {
                 res += *(current++);
                 type = Types::Literal;
-            }
-            else {
+            } else {
                 type = Types::ELSE;
             }
-        }
-        else if (*current == '\'') {
+        } else if (*current == '\'') {
             res += *(current++);
             while (current < end and *current != '\'') {
                 res += *(current++);
@@ -101,12 +88,10 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
             if (current < end) {
                 res += *(current++);
                 type = Types::Literal;
-            }
-            else {
+            } else {
                 type = Types::ELSE;
             }
-        }
-        else if (find(simple_oper.begin(), simple_oper.end(), *current) != simple_oper.end()) {
+        } else if (find(simple_oper.begin(), simple_oper.end(), *current) != simple_oper.end()) {
             res += *current;
             type = Types::Operation;
             ++current;
@@ -115,8 +100,7 @@ pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie)
                     res += *(current++);
                 }
             }
-        }
-        else if (*current == '\\') {
+        } else if (*current == '\\') {
             type = Types::Literal;
             res += *(current++);
         }
