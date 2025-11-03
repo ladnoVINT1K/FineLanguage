@@ -1,1 +1,1 @@
-# FineLanguage
+# BeQuiet language (BQ)
