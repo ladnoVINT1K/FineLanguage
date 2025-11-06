@@ -1,4 +1,4 @@
-#include "lexer.h"
+#include "lexer.cxx"
 
 int main() {
     try {
