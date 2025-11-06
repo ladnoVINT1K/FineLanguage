@@ -13,22 +13,36 @@ Lexer::Lexer(string file, Trie& trie) : trie_(trie){
 
 Lexer::~Lexer() {}
 
-pair<Types, string> Lexer::get_lexem() {
+Lexem Lexer::make_lexem(Types type, const std::string& value, int line, int col) {
+    return Lexem(type, value, line, col);
+}
+
+Lexem Lexer::get_lexem() {
+    int start_line = current_line_;
+    int start_col = current_column_;
     Types type = Types::Keyword;
     for (; pos_ < end_;) {
         string res = "";
         if (*pos_ == ' ' or *pos_ == '\n' or *pos_ == '\r' or *pos_ == '\t') {
+            if (*pos_ == '\n') {
+                ++current_line_;
+                current_column_ = 1;
+            }
             ++pos_;
+            ++current_column_;
             continue;
         } else if (*pos_ == '/') {
             ++pos_;
+            ++current_column_;
             if (pos_ < end_ and *pos_ == '=') {
                 type = Types::Operation;
                 res += *(pos_++);
             } else if (pos_ < end_ and *pos_ == '*') {
                 ++pos_;
+                ++current_column_;
                 while (pos_ < end_) {
                     if (*(pos_++) == '*' and *pos_ == '/') {
+                        current_column_ += 2;
                         ++pos_;
                         break;
                     }
@@ -36,6 +50,7 @@ pair<Types, string> Lexer::get_lexem() {
                 continue;
             } else if (pos_ < end_ and *pos_ == '/') {
                 ++pos_;
+                ++current_column_;
                 while (pos_ < end_ and *(pos_++) != '\n') {}
                 continue;
             } else {
@@ -44,23 +59,28 @@ pair<Types, string> Lexer::get_lexem() {
             }
         } else if (isalpha(*pos_) or *pos_ == '_') {
             res += (*(pos_++));
+            ++current_column_;
             while (pos_ < end_ and (isalnum(*pos_) or *pos_ == '_')) {
                 res += (*(pos_++));
+                ++current_column_;
             }
             if (res == "not" or res == "and" or res == "or") {
                 type = Types::Operation;
-            }else if (trie_.isExisted(res)) {
+            } else if (trie_.isExisted(res)) {
                 type = Types::Keyword;
             } else type = Types::Identificator;
         } else if (isdigit(*pos_)) {
             while (pos_ < end_ and isdigit(*pos_)) {
                 res += (*(pos_++));
+                ++current_column_;
             }
             if (pos_ < end_ and *pos_ == '.') {
                 ++pos_;
+                ++current_column_;
                 res += '.';
                 while (pos_ < end_ and isdigit(*pos_)) {
                     res += (*(pos_++));
+                    ++current_column_;
                 }
             }
             if (res[res.size() - 1] == '.') {
@@ -70,27 +90,34 @@ pair<Types, string> Lexer::get_lexem() {
             res += *pos_;
             type = Types::Punctuation;
             ++pos_;
+            ++current_column_;
         } else if (*pos_ == '\0') {
             type = Types::Literal;
             res += *(pos_++);
+            ++current_column_;
         } else if (*pos_ == '"') {
             res += *(pos_++);
+            ++current_column_;
             while (pos_ < end_ and *pos_ != '"') {
                 res += *(pos_++);
+                ++current_column_;
             }
             if (pos_ < end_) {
                 res += *(pos_++);
+                ++current_column_;
                 type = Types::Literal;
             } else {
                 type = Types::ELSE;
             }
         } else if (*pos_ == '\'') {
             res += *(pos_++);
+            ++current_column_;
             while (pos_ < end_ and *pos_ != '\'') {
                 res += *(pos_++);
             }
             if (pos_ < end_) {
                 res += *(pos_++);
+                ++current_column_;
                 type = Types::Literal;
             } else {
                 type = Types::ELSE;
@@ -99,6 +126,7 @@ pair<Types, string> Lexer::get_lexem() {
             res += *pos_;
             type = Types::Operation;
             ++pos_;
+            ++current_column_;
             if (pos_ < end_) {
                 if (find(compound_oper.begin(), compound_oper.end(), res + *pos_) != compound_oper.end()) {
                     res += *(pos_++);
@@ -107,10 +135,11 @@ pair<Types, string> Lexer::get_lexem() {
         } else if (*pos_ == '\\') {
             type = Types::Literal;
             res += *(pos_++);
+            ++current_column_;
         }
-        return { type, res };
+        return make_lexem(type, res, start_line, start_col);
     }
-    return { Types::END, "" };
+    return make_lexem(Types::END, "", start_line, start_col);
 }
 
 string type_to_string(Types type) {
