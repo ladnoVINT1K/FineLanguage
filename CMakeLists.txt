@@ -6,4 +6,4 @@ project(BeQuietLanguage)
 add_subdirectory(src/lexicalAnalyzer)
 #add_subdirectory(src/syntaxAnalyzer)
 
-add_executable(main.cpp)
+#add_executable(main.cpp)
