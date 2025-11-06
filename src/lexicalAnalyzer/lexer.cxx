@@ -1,108 +1,112 @@
-#pragma once
-#include "trie.h"
+#include "lexer.h"
 
-using std::isalpha;
-using std::isalnum;
-using std::isdigit;
-using std::find;
+Lexer::Lexer(string file, Trie& trie) : trie_(trie){
+    std::ifstream in_program("Program.txt", std::ios::binary);
+    in_program.seekg(0, std::ios::end);
+    int size_text = in_program.tellg();
+    in_program.seekg(0, std::ios::beg);
+    text_ = new char[size_text];
+    in_program.read(text_, size_text);
+    pos_ = text_;
+    end_ = text_ + size_text;
+}
 
-const enum class Types { Keyword, Identificator, Literal, Operation, Punctuation, ELSE, END };
+Lexer::~Lexer() {}
 
-const vector <char> simple_oper = { '+', '*', '/', '=', '-', '!', '<', '>', '&', '|', '%', '^', '[', ']', '.' };
-const vector <string> compound_oper = { "++", "--", "==", ">=", "<=", "!=", "||", "&&", "^=", "&=", "|=", "*=" };
-
-pair<Types, string> get_lexem(const char*& current, const char* end, Trie& trie) {
+pair<Types, string> Lexer::get_lexem() {
     Types type = Types::Keyword;
-    for (; current < end;) {
+    for (; pos_ < end_;) {
         string res = "";
-        if (*current == ' ' or *current == '\n' or *current == '\r' or *current == '\t') {
-            ++current;
+        if (*pos_ == ' ' or *pos_ == '\n' or *pos_ == '\r' or *pos_ == '\t') {
+            ++pos_;
             continue;
-        } else if (*current == '/') {
-            ++current;
-            if (current < end and *current == '=') {
+        } else if (*pos_ == '/') {
+            ++pos_;
+            if (pos_ < end_ and *pos_ == '=') {
                 type = Types::Operation;
-                res += *(current++);
-            } else if (current < end and *current == '*') {
-                ++current;
-                while (current < end) {
-                    if (*(current++) == '*' and *current == '/') {
-                        ++current;
+                res += *(pos_++);
+            } else if (pos_ < end_ and *pos_ == '*') {
+                ++pos_;
+                while (pos_ < end_) {
+                    if (*(pos_++) == '*' and *pos_ == '/') {
+                        ++pos_;
                         break;
                     }
                 }
                 continue;
-            } else if (current < end and *current == '/') {
-                ++current;
-                while (current < end and *(current++) != '\n') {}
+            } else if (pos_ < end_ and *pos_ == '/') {
+                ++pos_;
+                while (pos_ < end_ and *(pos_++) != '\n') {}
                 continue;
             } else {
                 type = Types::Operation;
                 res += '/';
             }
-        } else if (isalpha(*current) or *current == '_') {
-            res += (*(current++));
-            while (current < end and (isalnum(*current) or *current == '_')) {
-                res += (*(current++));
+        } else if (isalpha(*pos_) or *pos_ == '_') {
+            res += (*(pos_++));
+            while (pos_ < end_ and (isalnum(*pos_) or *pos_ == '_')) {
+                res += (*(pos_++));
             }
-            if (trie.isExisted(res)) {
+            if (res == "not" or res == "and" or res == "or") {
+                type = Types::Operation;
+            }else if (trie_.isExisted(res)) {
                 type = Types::Keyword;
             } else type = Types::Identificator;
-        } else if (isdigit(*current)) {
-            while (current < end and isdigit(*current)) {
-                res += (*(current++));
+        } else if (isdigit(*pos_)) {
+            while (pos_ < end_ and isdigit(*pos_)) {
+                res += (*(pos_++));
             }
-            if (current < end and *current == '.') {
-                ++current;
+            if (pos_ < end_ and *pos_ == '.') {
+                ++pos_;
                 res += '.';
-                while (current < end and isdigit(*current)) {
-                    res += (*(current++));
+                while (pos_ < end_ and isdigit(*pos_)) {
+                    res += (*(pos_++));
                 }
             }
             if (res[res.size() - 1] == '.') {
                 type = Types::ELSE;
             } else type = Types::Literal;
-        } else if (*current == ',' or *current == ';' or *current == '(' or *current == ')' or *current == '{' or *current == '}') {
-            res += *current;
+        } else if (*pos_ == ',' or *pos_ == ';' or *pos_ == '(' or *pos_ == ')' or *pos_ == '{' or *pos_ == '}' or *pos_ == '<' or *pos_ == '>') {
+            res += *pos_;
             type = Types::Punctuation;
-            ++current;
-        } else if (*current == '\0') {
+            ++pos_;
+        } else if (*pos_ == '\0') {
             type = Types::Literal;
-            res += *(current++);
-        } else if (*current == '"') {
-            res += *(current++);
-            while (current < end and *current != '"') {
-                res += *(current++);
+            res += *(pos_++);
+        } else if (*pos_ == '"') {
+            res += *(pos_++);
+            while (pos_ < end_ and *pos_ != '"') {
+                res += *(pos_++);
             }
-            if (current < end) {
-                res += *(current++);
+            if (pos_ < end_) {
+                res += *(pos_++);
                 type = Types::Literal;
             } else {
                 type = Types::ELSE;
             }
-        } else if (*current == '\'') {
-            res += *(current++);
-            while (current < end and *current != '\'') {
-                res += *(current++);
+        } else if (*pos_ == '\'') {
+            res += *(pos_++);
+            while (pos_ < end_ and *pos_ != '\'') {
+                res += *(pos_++);
             }
-            if (current < end) {
-                res += *(current++);
+            if (pos_ < end_) {
+                res += *(pos_++);
                 type = Types::Literal;
             } else {
                 type = Types::ELSE;
             }
-        } else if (find(simple_oper.begin(), simple_oper.end(), *current) != simple_oper.end()) {
-            res += *current;
+        } else if (find(simple_oper.begin(), simple_oper.end(), *pos_) != simple_oper.end()) {
+            res += *pos_;
             type = Types::Operation;
-            ++current;
-            if (current < end) {
-                if (find(compound_oper.begin(), compound_oper.end(), res + *current) != compound_oper.end()) {
-                    res += *(current++);
+            ++pos_;
+            if (pos_ < end_) {
+                if (find(compound_oper.begin(), compound_oper.end(), res + *pos_) != compound_oper.end()) {
+                    res += *(pos_++);
                 }
             }
-        } else if (*current == '\\') {
+        } else if (*pos_ == '\\') {
             type = Types::Literal;
-            res += *(current++);
+            res += *(pos_++);
         }
         return { type, res };
     }
