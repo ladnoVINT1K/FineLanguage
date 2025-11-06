@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDART 17)
 
 project(BeQuietLanguage)
 
-add_subdirectory(src/lexicalAnalizer)
+add_subdirectory(src/lexicalAnalyzer)
 #add_subdirectory(src/syntaxAnalyzer)
 
 add_executable(main.cpp)
