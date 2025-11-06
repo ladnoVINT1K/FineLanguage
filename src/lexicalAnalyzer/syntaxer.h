@@ -10,7 +10,7 @@ public:
 	bool matchType(Types type);
 private:
 	Lexer& lexer_;
-	std::pair<Types, std::string> curr_;
+	Lexem curr_;
 	void NewToken();
 	void Prog();
 	void Declarations();

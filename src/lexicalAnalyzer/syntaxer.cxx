@@ -1,31 +1,31 @@
 #include "syntaxer.h"
 #include <iostream>
 
-Syntaxer::Syntaxer(Lexer& lexer) : lexer_(lexer) {
-	curr_ = lexer.get_lexem();
-}
+Syntaxer::Syntaxer(Lexer& lexer) : lexer_(lexer), curr_(lexer.get_lexem()) {}
+
 void Syntaxer::NewToken() {
 	curr_ = lexer_.get_lexem();
 }
 
 bool Syntaxer::match(const string& value) {
-	return (value.empty() or curr_.second == value);
+	return (value.empty() or curr_.value == value);
 }
 
 bool Syntaxer::matchType(Types type) {
-	return (curr_.first == type);
+	return (curr_.type == type);
 }
 
-void Syntaxer::expect(const string& value) {
-	if (!value.empty() and curr_.second != value) {
-		throw value;
+void Syntaxer::expect(Types type, const string& value) {
+	if (!value.empty() and curr_.value != value) {
+		std::pair<Types, string> need = { type, value };
+		throw std::make_pair(curr_, need);
 	}
 	NewToken();
 }
 
 void Syntaxer::expectType(Types type) {
-	if (curr_.first != type) {
-		throw type;
+	if (curr_.type != type) {
+		throw std::make_pair(curr_, type);
 	}
 	NewToken();
 }
@@ -37,7 +37,7 @@ bool Syntaxer::syntax() {
 }
 
 void Syntaxer::Prog() {
-	if (curr_.first != Types::END) {
+	if (!matchType(Types::END)) {
 		Declarations();
 	}
 }
@@ -45,10 +45,10 @@ void Syntaxer::Prog() {
 void Syntaxer::Declarations() {
 	while (!matchType(Types::END)) {
 		Declaration();
-		expect(";");
+		expect(Types::Punctuation, ";");
 	}
 }
- 
+
 void Syntaxer::Declaration() {
 	if (match("def")) {
 		Func();
@@ -66,20 +66,20 @@ void Syntaxer::Var() {
 void Syntaxer::Type() {
 	if (match("massive")) {
 		NewToken();
-		expect("<");
+		expect(Types::Punctuation, "<");
 		Type();
-		expect(">");
+		expect(Types::Punctuation, ">");
 	} else if (match("char") or match("int")
 		or match("float") or match("let")) {
 		NewToken();
 	} else {
-		throw curr_.first;
+		throw curr_.type;
 	}
 }
 
 void Syntaxer::Init() {
 	if (match(";")) return;
-	expect("=");
+	expect(Types::Operation, "=");
 	if (match("{")) {
 		list();
 	} else {
@@ -88,17 +88,17 @@ void Syntaxer::Init() {
 }
 
 void Syntaxer::Func() {
-	expect("def");
+	expect(Types::Keyword, "def");
 	TypeF();
 	expectType(Types::Identificator);
-	expect("(");
+	expect(Types::Punctuation, "(");
 	Params();
-	expect(")");
-	expect("{");
+	expect(Types::Punctuation, ")");
+	expect(Types::Punctuation, "{");
 	FuncR();
 	ReturnState();
-	expect(";");
-	expect("}");
+	expect(Types::Punctuation, ";");
+	expect(Types::Punctuation, "}");
 }
 
 void Syntaxer::TypeF() {
@@ -151,17 +151,17 @@ void Syntaxer::State() {
 	} else {
 		Expr();
 	}
-	expect(";");
+	expect(Types::Punctuation, ";");
 }
 
 void Syntaxer::IfState() {
-	expect("if");
-	expect("(");
+	expect(Types::Keyword, "if");
+	expect(Types::Punctuation, "(");
 	Expr();
-	expect(")");
-	expect("{");
+	expect(Types::Punctuation, ")");
+	expect(Types::Punctuation, "{");
 	State();
-	expect("}");
+	expect(Types::Punctuation, "}");
 	IfStateTail();
 }
 
@@ -169,16 +169,16 @@ void Syntaxer::IfStateTail() {
 	if (match(";")) {
 		NewToken();
 	} else {
-		expect("else");
-		expect("{");
+		expect(Types::Keyword, "else");
+		expect(Types::Punctuation, "{");
 		State();
-		expect("}");
+		expect(Types::Punctuation, "}");
 	}
 }
 
 void Syntaxer::ForState() {
-	expect("for");
-	expect("(");
+	expect(Types::Keyword, "for");
+	expect(Types::Punctuation, "(");
 	ForStateTail();
 }
 
@@ -187,20 +187,20 @@ void Syntaxer::ForStateTail() {
 		NewToken();
 	} else {
 		A();
-		expect(";");
+		expect(Types::Punctuation, ";");
 	}
 	Expr();
-	expect(";");
+	expect(Types::Punctuation, ";");
 	Expr();
-	expect(")");
-	expect("{");
+	expect(Types::Punctuation, ")");
+	expect(Types::Punctuation, "{");
 	State();
-	expect("}");
+	expect(Types::Punctuation, "}");
 }
 
 void Syntaxer::A() {
 	if (match("char") or match("int")
-		or match("float") or match("let") 
+		or match("float") or match("let")
 		or match("massive")) {
 		Var();
 	} else {
@@ -209,17 +209,17 @@ void Syntaxer::A() {
 }
 
 void Syntaxer::WhileState() {
-	expect("while");
-	expect("(");
+	expect(Types::Keyword, "while");
+	expect(Types::Punctuation, "(");
 	Expr();
-	expect(")");
-	expect("{");
+	expect(Types::Punctuation, ")");
+	expect(Types::Punctuation, "{");
 	State();
-	expect("}");
+	expect(Types::Punctuation, "}");
 }
 
 void Syntaxer::ReturnState() {
-	expect("return");
+	expect(Types::Keyword, "return");
 	if (!match(";")) {
 		Expr();
 	}
@@ -235,7 +235,7 @@ void Syntaxer::Expr() {
 
 void Syntaxer::E1() {
 	E2();
-	while (match("+=") or match("-=") or match("*=") 
+	while (match("+=") or match("-=") or match("*=")
 		or match("/=") or match("%=")) {
 		NewToken();
 		E2();
@@ -260,7 +260,7 @@ void Syntaxer::E3() {
 
 void Syntaxer::E4() {
 	E5();
-	while (match("<") or match(">") or match("==") 
+	while (match("<") or match(">") or match("==")
 		or match("!=") or match("<=") or match(">=")) {
 		NewToken();
 		E5();
@@ -296,7 +296,7 @@ void Syntaxer::E8() {
 	if (match("(")) {
 		NewToken();
 		Expr();
-		expect(")");
+		expect(Types::Punctuation, ")");
 	} else if (matchType(Types::Identificator)) {
 		NewToken();
 		CI();
@@ -314,7 +314,7 @@ void Syntaxer::CI() {
 }
 
 void Syntaxer::Call() {
-	expect("(");
+	expect(Types::Punctuation, "(");
 	CallTail();
 }
 
@@ -322,7 +322,7 @@ void Syntaxer::CallTail() {
 	if (!match(")")) {
 		Args();
 	}
-	expect(")");
+	expect(Types::Punctuation, ")");
 }
 
 void Syntaxer::Args() {
@@ -337,29 +337,29 @@ void Syntaxer::Iden() {
 	while (match("[")) {
 		NewToken();
 		Expr();
-		expect("]");
+		expect(Types::Operation, "]");
 	}
 }
 
 void Syntaxer::list() {
-	expect("{");
+	expect(Types::Punctuation, "{");
 	while (!match("}")) {
 		Expr();
 	}
-	expect("}");
+	expect(Types::Punctuation, "}");
 }
 
 void Syntaxer::cin() {
-	expect("input");
-	expect("(");
+	expect(Types::Keyword, "input");
+	expect(Types::Punctuation, "(");
 	expectType(Types::Identificator);
 	Iden();
-	expect(")");
+	expect(Types::Punctuation, ")");
 }
 
 void Syntaxer::cout() {
-	expect("output");
-	expect("(");
+	expect(Types::Keyword, "output");
+	expect(Types::Punctuation, "(");
 	Expr();
-	expect(")");
+	expect(Types::Punctuation, ")");
 }
