@@ -1,11 +1,11 @@
-#include "lexer.h"
+#include "../lexicalAnalyzer/lexer.h"
 
 class Syntaxer {
 public:
 	Syntaxer(Lexer& lexer);
 	bool syntax();
 	bool match(const std::string& value);
-	void expect(const std::string& value);
+	void expect(Types type, const std::string& value);
 	void expectType(Types type);
 	bool matchType(Types type);
 private:
