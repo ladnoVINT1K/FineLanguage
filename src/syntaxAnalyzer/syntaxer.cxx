@@ -73,12 +73,12 @@ void Syntaxer::Type() {
 		or match("float") or match("let")) {
 		NewToken();
 	} else {
-		throw curr_.type;
+		throw curr_;
 	}
 }
 
 void Syntaxer::Init() {
-	if (match(";")) return;
+	if (match(";") or match(",") or match(")")) return;
 	expect(Types::Operation, "=");
 	if (match("{")) {
 		list();
@@ -166,9 +166,7 @@ void Syntaxer::IfState() {
 }
 
 void Syntaxer::IfStateTail() {
-	if (match(";")) {
-		NewToken();
-	} else {
+	if (!match(";")) {
 		expect(Types::Keyword, "else");
 		expect(Types::Punctuation, "{");
 		State();
@@ -236,7 +234,7 @@ void Syntaxer::Expr() {
 void Syntaxer::E1() {
 	E2();
 	while (match("+=") or match("-=") or match("*=")
-		or match("/=") or match("%=")) {
+		or match("/=") or match("%=") or match("=")) {
 		NewToken();
 		E2();
 	}
