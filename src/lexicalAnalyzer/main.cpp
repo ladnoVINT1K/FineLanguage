@@ -18,7 +18,7 @@ int main() {
         std::cerr << type_to_string(error.first.type) << " " << error.first.value << '\n'
             << "in line:" << error.first.line << " column:" << error.first.column << '\n'
             << "need " << type_to_string(error.second);
-    } catch (Types type) {
-        std::cerr << "where type"; //я не придумала как тут лучше кидать исключения... пока так
+    } catch (Lexem error) {
+        std::cerr << "where type in line: " << error.line << " column:" << error.column; //я не придумала как тут лучше кидать исключения... пока так
     }
 }
