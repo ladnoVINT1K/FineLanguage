@@ -1,6 +1,6 @@
 #include "lexer.h"
 
-Lexer::Lexer(string file, Trie& trie) : trie_(trie){
+Lexer::Lexer(string file, Trie& trie) : trie_(trie) {
     std::ifstream in_program("Program.txt", std::ios::binary);
     in_program.seekg(0, std::ios::end);
     int size_text = in_program.tellg();
@@ -26,10 +26,13 @@ Lexem Lexer::get_lexem() {
         if (*pos_ == ' ' or *pos_ == '\n' or *pos_ == '\r' or *pos_ == '\t') {
             if (*pos_ == '\n') {
                 ++current_line_;
-                current_column_ = 1;
+                ++start_line;
+                current_column_ = 0;
+                start_col = 0;
             }
             ++pos_;
             ++current_column_;
+            ++start_col;
             continue;
         } else if (*pos_ == '/') {
             ++pos_;
