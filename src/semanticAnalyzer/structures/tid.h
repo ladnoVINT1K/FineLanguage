@@ -7,12 +7,13 @@
 using std::string;
 using std::vector;
 
-enum class Typeof {Int, Float, Literal}; 
+enum class Typeof {Int, Float, Char, Let}; 
 
 struct ident {
     Typeof type;
     string name;
     string value;
+    int depth = 0;
 };
 
 struct Tid{

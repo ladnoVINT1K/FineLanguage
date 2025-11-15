@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cctype>
 #include <algorithm>
+#include "../../lexicalAnalyzer/lexer.h"
 
 using std::exception;
 using std::stack;
@@ -13,21 +14,22 @@ using std::string;
 enum class base {
     Int, Float,
     Bool,
-    Char, String, Void
+    Char, Let, Void
 };
 
 enum class Oper {
     NumOper,   // +, -, *, /
-    BoolOper,  // and, or
-    Equal,     // ==, !=, <, >, <=, >=
+    BoolOper,  // and, or, == , !=
+    Equal,     // =, *=, /=, etc
     Unary      // любой унарный оп (пока так)
 };
 
 struct TypeInfo {
-    TypeInfo(base t, int depth = 0) : type_(t), arrayDepth_(depth) {}
+    TypeInfo(base t, Types l, int depth = 0) : type_(t), arrayDepth_(depth), lextype_(l) {}
 
     base type_;
     int arrayDepth_ = 0;
+    Types lextype_;
     bool isArray() const { return arrayDepth_ > 0; }
 };
 

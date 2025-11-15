@@ -65,8 +65,15 @@ void TypeStack::push(string lex) {
     if (lex == "==" || lex == "!=" ||
         lex == "<"  || lex == ">"  ||
         lex == "<=" || lex == ">=") {
+        pushOp(Oper::BoolOper);
+        return;
+    }
+
+    if (lex == "="  || lex == "*=" ||
+        lex == "/=" || lex == "%=") {
         pushOp(Oper::Equal);
         return;
+    
     }
 
     if (lex == "not" or lex == "!") {
@@ -81,22 +88,22 @@ void TypeStack::push(string lex) {
 
     // литералы
     if (lex == "true" || lex == "false") {
-        typeStack_.push(TypeInfo(base::Bool));
+        typeStack_.push(TypeInfo(base::Bool, Types::Literal));
         return;
     }
     // int
     if (!lex.empty() && std::all_of(lex.begin(), lex.end(),
                                     [](unsigned char c){ return std::isdigit(c); })) {
-        typeStack_.push(TypeInfo(base::Int));
+        typeStack_.push(TypeInfo(base::Int, Types::Literal));
         return;
     }
     //float
     if (isFloatLit(lex)) {
-        typeStack_.push(TypeInfo(base::Float));
+        typeStack_.push(TypeInfo(base::Float, Types::Literal));
         return;
     }
 
-    typeStack_.push(TypeInfo(base::String));
+    typeStack_.push(TypeInfo(base::Char, Types::Literal));
 }
 
 void TypeStack::check_bin() {
@@ -113,9 +120,9 @@ void TypeStack::check_bin() {
             throw std::logic_error("numeric op requires Int/Float");
 
         if (lhs.type_ == base::Float || rhs.type_ == base::Float)
-            typeStack_.push(TypeInfo(base::Float));
+            typeStack_.push(TypeInfo(base::Float, Types::Literal));
         else
-            typeStack_.push(TypeInfo(base::Int));
+            typeStack_.push(TypeInfo(base::Int, Types::Literal));
         break;
 
     case Oper::BoolOper:
@@ -125,10 +132,11 @@ void TypeStack::check_bin() {
         if (lhs.type_ != base::Bool || rhs.type_ != base::Bool)
             throw std::logic_error("bool op requires Bool && Bool");
 
-        typeStack_.push(TypeInfo(base::Bool));
+        typeStack_.push(TypeInfo(base::Bool, Types::Literal));
         break;
 
     case Oper::Equal:
+        if (lhs.lextype_ != Types::Identificator) throw std::logic_error("lhs must be Identificator");
         if (lhs.isArray() || rhs.isArray()) {
             throw std::logic_error("equal op on array not supported");
         }
@@ -138,7 +146,7 @@ void TypeStack::check_bin() {
                 throw std::logic_error("cannot compare different non-numeric types");
         }
 
-        typeStack_.push(TypeInfo(base::Bool));
+        typeStack_.push(TypeInfo(lhs.type_, lhs.lextype_));
         break;
 
     default:
@@ -160,7 +168,7 @@ void TypeStack::check_uno() {
         throw std::logic_error("unary op requires Bool");
     }
 
-    typeStack_.push(TypeInfo(base::Bool));
+    typeStack_.push(TypeInfo(base::Bool, Types::Literal));
 }
 
 bool TypeStack::check_if() {
