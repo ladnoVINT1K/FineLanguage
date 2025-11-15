@@ -3,26 +3,17 @@
 #include <deque>
 #include "../../lexicalAnalyzer/lexer.h"
 #include <string>
+#include <vector>
 
-struct Tid{
+struct ident {
     Types type;
     string name;
     string value;
 };
 
-class TidNode{
-public:
-    // --- constructors, destructors ---//
-    TidNode();
-    ~TidNode() = default;
-
-    void add();
-    void del();
-    bool isExisted();
-
-    TidNode* prev = nullptr;
-private:
-    Tid tid;
+struct Tid{
+    vector<ident> ids;
+    Tid* prev_ = nullptr;
 };
 
 class TidTree{
@@ -33,11 +24,11 @@ public:
 
     // --- main functions --- //
     void Create_Tid();
-    void Push_id();
-    bool Check_id();
+    void Push_id(ident v);
+    bool Check_id(string name);
     void Del_Tid();
 
 private:
-    TidNode* Global;
-    TidNode* cur;
+    Tid* Global_;
+    Tid* cur_;
 };
