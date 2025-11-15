@@ -1,6 +1,6 @@
-#include "src/lexicalAnalyzer/lexer.h"
-#include "src/lexicalAnalyzer/trie.h"
-#include "src/syntaxAnalyzer/syntaxer.h"
+#include "src/lexicalAnalyzer/lexer.cxx"
+#include "src/lexicalAnalyzer/trie.cxx"
+#include "src/syntaxAnalyzer/syntaxer.cxx"
 
 int main() {
 

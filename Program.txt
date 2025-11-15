@@ -1,5 +1,14 @@
-int fact(int n) {
-    int r = 1;
-    while (n > 1) r *= n--;
-    return r;
-}
+def int fastpow(int p, int q) {
+    if (q < 0) {
+        return 1 / fastpow(p, -1 * q);
+    } else {
+        if (q > 0) {
+            if (q % 2 == 0) {
+                return fastpow(p, q / 2) * fastpow(p, q / 2);
+            } else {
+                return fastpow(p, q - 1) * p;
+            };
+        };
+    };
+    return 1;
+};
