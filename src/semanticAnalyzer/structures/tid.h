@@ -1,12 +1,16 @@
 #pragma once
 #include <iostream>
 #include <deque>
-#include "../../lexicalAnalyzer/lexer.h"
 #include <string>
 #include <vector>
 
+using std::string;
+using std::vector;
+
+enum class Typeof {Int, Float, Literal}; 
+
 struct ident {
-    Types type;
+    Typeof type;
     string name;
     string value;
 };

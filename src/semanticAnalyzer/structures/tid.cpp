@@ -33,21 +33,20 @@ void TidTree::Push_id(ident v) {
 }
 
 void TidTree::Del_Tid() {
-    try {
-        auto tmp = cur_;
-        cur_ = cur_->prev_; // nullptr exception (dont try to remove global)
-        delete tmp;
-    } catch (std::exception& e) {
-        std::cerr << "[TID ERROR]: " << e.what() << std::endl;
-        throw(1); // не ловить! пусть бьет в main!! 
+    if (cur_ == Global_) {
+        throw std::logic_error("[TID ERROR]: attempt to delete global Tid");
     }
+
+    Tid* tmp = cur_;
+    cur_ = cur_->prev_;
+    delete tmp;
 }
 
+
 TidTree::~TidTree() {
-    while (cur_ != Global_) {
-        auto tmp = cur_;
+    while (cur_ != nullptr) {
+        Tid* tmp = cur_;
         cur_ = cur_->prev_;
         delete tmp;
     }
-    delete Global_;
 }

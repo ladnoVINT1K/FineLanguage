@@ -6,3 +6,8 @@ x64/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.out
+*.o
+*.a
+*.so
+*.dylib
